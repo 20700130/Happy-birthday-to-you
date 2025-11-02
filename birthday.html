@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祝张婧生日快乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "楷体", "Microsoft YaHei", sans-serif;
+        }
+        
+        body {
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            color: white;
+        }
+        
+        /* 烟花画布 */
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        /* 启动页面样式 */
+        #start-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.8s ease;
+        }
+        
+        .start-title {
+            font-size: 48px;
+            font-weight: bold;
+            color: #FF69B4;
+            margin-bottom: 15px;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 105, 180, 0.9);
+            animation: titleGlow 2s infinite alternate;
+        }
+        
+        .start-subtitle {
+            font-size: 42px;
+            font-weight: bold;
+            color: #87CEFA;
+            margin-bottom: 40px;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(135, 206, 250, 0.9);
+            animation: subtitleGlow 2s infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% { text-shadow: 0 0 15px rgba(255, 105, 180, 0.7); transform: scale(1); }
+            100% { text-shadow: 0 0 25px rgba(255, 105, 180, 1), 0 0 35px rgba(255, 105, 180, 0.8); transform: scale(1.05); }
+        }
+        
+        @keyframes subtitleGlow {
+            0% { text-shadow: 0 0 15px rgba(135, 206, 250, 0.7); transform: scale(1); }
+            100% { text-shadow: 0 0 25px rgba(135, 206, 250, 1), 0 0 35px rgba(135, 206, 250, 0.8); transform: scale(1.05); }
+        }
+        
+        #start-btn {
+            background: linear-gradient(45deg, #FF69B4, #FF1493, #87CEFA, #20B2AA);
+            background-size: 300% 300%;
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s;
+            box-shadow: 0 5px 20px rgba(255, 105, 180, 0.5);
+            animation: gradientShift 3s ease infinite;
+            z-index: 10;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        #start-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 8px 25px rgba(255, 105, 180, 0.7);
+        }
+        
+        /* 主容器样式 */
+        .container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            display: none;
+            z-index: 2;
+        }
+        
+        /* 标题样式 */
+        .title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #FF69B4;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 105, 180, 0.5);
+        }
+        
+        /* 蛋糕容器样式 */
+        #cake-container {
+            position: relative;
+            width: 320px;
+            height: 300px;
+            margin-bottom: 50px;
+            z-index: 5;
+            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.3));
+        }
+        
+        /* 蛋糕底盘 */
+        .cake-plate {
+            position: absolute;
+            width: 280px;
+            height: 15px;
+            background: linear-gradient(to right, #f5f5f5, #e0e0e0, #f5f5f5);
+            bottom: 0;
+            left: 20px;
+            border-radius: 50%;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+        
+        .cake-plate::before {
+            content: '';
+            position: absolute;
+            width: 240px;
+            height: 10px;
+            background: linear-gradient(to right, #e8e8e8, #d0d0d0, #e8e8e8);
+            border-radius: 50%;
+            bottom: -5px;
+            left: 20px;
+        }
+        
+        /* 蛋糕层 */
+        .cake-layer {
+            position: absolute;
+            border-radius: 10px;
+            box-shadow: 
+                inset 0 5px 10px rgba(255, 255, 255, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .layer-1 {
+            width: 260px;
+            height: 50px;
+            background: linear-gradient(to bottom, #FFD700, #FFA500, #FF8C00);
+            bottom: 15px;
+            left: 30px;
+            z-index: 4;
+        }
+        
+        .layer-1::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(255, 215, 0, 0.7), transparent);
+            top: 0;
+            left: 0;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .layer-2 {
+            width: 220px;
+            height: 50px;
+            background: linear-gradient(to bottom, #20B2AA, #008B8B, #006666);
+            bottom: 65px;
+            left: 50px;
+            z-index: 3;
+        }
+        
+        .layer-2::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(32, 178, 170, 0.7), transparent);
+            top: 0;
+            left: 0;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .layer-3 {
+            width: 180px;
+            height: 50px;
+            background: linear-gradient(to bottom, #9370DB, #8A2BE2, #6A0DAD);
+            bottom: 115px;
+            left: 70px;
+            z-index: 2;
+        }
+        
+        .layer-3::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(to bottom, rgba(147, 112, 219, 0.7), transparent);
+            top: 0;
+            left: 0;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .layer-4 {
+            width: 140px;
+            height: 40px;
+            background: linear-gradient(to bottom, #FF69B4, #FF1493, #D1006B);
+            bottom: 165px;
+            left: 90px;
+            z-index: 1;
+        }
+        
+        .layer-4::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to bottom, rgba(255, 105, 180, 0.7), transparent);
+            top: 0;
+            left: 0;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        /* 糖霜装饰 */
+        .frosting {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            z-index: 5;
+        }
+        
+        .frosting-1 {
+            width: 20px;
+            height: 15px;
+            bottom: 205px;
+            left: 100px;
+            box-shadow: 
+                30px 0 white,
+                60px 0 white,
+                90px 0 white;
+        }
+        
+        .frosting-2 {
+            width: 15px;
+            height: 12px;
+            bottom: 155px;
+            left: 110px;
+            box-shadow: 
+                25px 0 white,
+                50px 0 white,
+                75px 0 white;
+        }
+        
+        .frosting-3 {
+            width: 12px;
+            height: 10px;
+            bottom: 105px;
+            left: 120px;
+            box-shadow: 
+                20px 0 white,
+                40px 0 white,
+                60px 0 white;
+        }
+        
+        /* 蜡烛样式 */
+        .candle {
+            position: absolute;
+            width: 10px;
+            height: 70px;
+            background: linear-gradient(to right, #FFD700, #FFF, #FFD700);
+            border-radius: 5px 5px 0 0;
+            z-index: 6;
+            bottom: 165px;
+            left: 155px;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .candle::before {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 5px;
+            background: #FF1493;
+            top: 0;
+            left: -2px;
+            border-radius: 2px;
+        }
+        
+        .flame {
+            position: absolute;
+            width: 16px;
+            height: 30px;
+            background: radial-gradient(circle at 30% 30%, #FFF 0%, #FFD700 30%, #FF4500 70%, transparent 100%);
+            border-radius: 50% 50% 20% 20%;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: flicker 1.2s infinite alternate;
+            box-shadow: 0 0 20px #FFD700, 0 0 40px #FF4500;
+            z-index: 7;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { 
+                transform: translateX(-50%) scale(1) rotate(0deg); 
+                opacity: 0.9; 
+            }
+            25% { 
+                transform: translateX(-50%) scale(1.1) rotate(1deg); 
+                opacity: 1; 
+            }
+            50% { 
+                transform: translateX(-50%) scale(0.9) rotate(-1deg); 
+                opacity: 0.8; 
+            }
+            75% { 
+                transform: translateX(-50%) scale(1.05) rotate(0.5deg); 
+                opacity: 1; 
+            }
+        }
+        
+        .flame::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            top: 5px;
+            left: 3px;
+            border-radius: 50%;
+            filter: blur(3px);
+        }
+        
+        /* 祝福语样式 */
+        .blessing {
+            position: absolute;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 240, 245, 0.95));
+            border-radius: 30px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 4;
+            max-width: 220px;
+            text-align: center;
+            opacity: 0;
+            animation: appearStayDisappear 7s ease-out forwards;
+            word-wrap: break-word;
+            transform: scale(0);
+            pointer-events: none;
+            border: 2px solid rgba(255, 182, 193, 0.3);
+        }
+        
+        @keyframes appearStayDisappear {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) rotate(-5deg);
+            }
+            15% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.8) rotate(5deg);
+            }
+        }
+        
+        /* 音乐控制 */
+        #musicControl {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255,182,193,0.8);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #FF69B4;
+            border: 2px solid #FF69B4;
+            transition: all 0.3s ease;
+        }
+        
+        #musicControl:hover {
+            background: #FF69B4;
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 28px;
+            }
+            
+            #cake-container {
+                width: 280px;
+                height: 260px;
+            }
+            
+            .cake-plate {
+                width: 240px;
+                left: 20px;
+            }
+            
+            .layer-1 {
+                width: 220px;
+                height: 40px;
+                left: 30px;
+            }
+            
+            .layer-2 {
+                width: 180px;
+                height: 40px;
+                left: 50px;
+            }
+            
+            .layer-3 {
+                width: 140px;
+                height: 40px;
+                left: 70px;
+            }
+            
+            .layer-4 {
+                width: 100px;
+                height: 30px;
+                left: 90px;
+            }
+            
+            .frosting-1 {
+                bottom: 175px;
+                left: 100px;
+            }
+            
+            .frosting-2 {
+                bottom: 135px;
+                left: 110px;
+            }
+            
+            .frosting-3 {
+                bottom: 95px;
+                left: 120px;
+            }
+            
+            .candle {
+                height: 60px;
+                bottom: 135px;
+                left: 135px;
+            }
+            
+            .blessing {
+                font-size: 18px;
+                max-width: 180px;
+            }
+            
+            .start-title {
+                font-size: 36px;
+            }
+            
+            .start-subtitle {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 烟花画布 -->
+    <canvas id="fireworksCanvas"></canvas>
+    
+    <!-- 启动页面 -->
+    <div id="start-page">
+        <div class="start-title">祝张婧</div>
+        <div class="start-subtitle">！！生日快乐！！</div>
+        <button id="start-btn">开始</button>
+    </div>
+    
+    <!-- 主容器 -->
+    <div class="container">
+        <div class="title">生日快乐！</div>
+        
+        <!-- 蛋糕容器 -->
+        <div id="cake-container">
+            <!-- 蛋糕底盘 -->
+            <div class="cake-plate"></div>
+            
+            <!-- 四层蛋糕 -->
+            <div class="cake-layer layer-1"></div>
+            <div class="cake-layer layer-2"></div>
+            <div class="cake-layer layer-3"></div>
+            <div class="cake-layer layer-4"></div>
+            
+            <!-- 糖霜装饰 -->
+            <div class="frosting frosting-1"></div>
+            <div class="frosting frosting-2"></div>
+            <div class="frosting frosting-3"></div>
+            
+            <!-- 蜡烛 -->
+            <div class="candle">
+                <div class="flame"></div>
+            </div>
+        </div>
+        
+        <!-- 祝福语容器 -->
+        <div id="blessings-container"></div>
+        
+        <!-- 音乐控制 -->
+        <div id="musicControl">♪</div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="birthdayBGM" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-happy-birthday-in-hawaii-80.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // 祝福语列表
+        const blessings = [
+            "生日快乐", "梦想成真", "保持好心情", "多注意休息", "顺顺利利",
+            "天冷注意加衣", "每天好睡眠", "学习进步", "身体健康", "万事如意",
+            "笑口常开", "越来越漂亮可爱", "幸福美满", "平安喜乐", "心想事成",
+            "天天开心",  "送你一块大蛋糕,祝福短信随声到", "幸福常伴你左右,快乐一生永相随",  "送你一块爱心蛋糕:底层送一生平安",
+            "中间放无限祝福,四周注满富贵吉祥", "上面铺满开心快乐,再加上幸福美满"
+        ];
+        
+        // 祝福语颜色列表
+        const blessingColors = [
+            "#FFB6C1", "#87CEFA", "#98FB98", "#FFFACD",
+            "#E6E6FA", "#FFDAB9", "#B0E0E6", "#FFA07A",
+            "#D8BFD8", "#B0E0E6", "#F0E68C", "#FFD700"
+        ];
+        
+        // 烟花效果实现 [1,6,8](@ref)
+        function initFireworks() {
+            const canvas = document.getElementById('fireworksCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置画布尺寸
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+            
+            const fireworks = [];
+            const particles = [];
+            // 减小重力，让烟花飞得更高
+            const gravity = 0.03;
+            
+            // 随机数生成函数
+            function random(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+            
+            // 随机颜色生成
+            function randomColor() {
+                return `hsl(${Math.floor(random(0, 360))}, 100%, 50%)`;
+            }
+            
+            // 烟花类
+            class Firework {
+                constructor(x, y, targetY) {
+                    this.x = x || random(100, canvas.width - 100);
+                    this.y = y || canvas.height;
+                    // 调整目标高度为画布的1/4处（原来为1/2处），让烟花飞得更高
+                    this.targetY = targetY || random(50, canvas.height / 4);
+                    // 增加上升速度，让烟花更快到达高点
+                    this.speed = random(3, 5);
+                    this.angle = Math.PI / 2;
+                    this.velocityX = Math.cos(this.angle) * this.speed;
+                    this.velocityY = -Math.sin(this.angle) * this.speed;
+                    this.exploded = false;
+                    this.color = randomColor();
+                    this.radius = 2;
+                }
+                
+                update() {
+                    // 减小重力影响，让烟花在空中停留更久
+                    this.velocityY += gravity * 0.8;
+                    this.x += this.velocityX;
+                    this.y += this.velocityY;
+                    
+                    // 调整爆炸触发条件，在更高位置爆炸
+                    if (this.velocityY >= 0.5 && !this.exploded) {
+                        this.exploded = true;
+                        this.explode();
+                    }
+                }
+                
+                explode() {
+                    // 增加粒子数量，让爆炸效果更壮观
+                    const particleCount = 120;
+                    for (let i = 0; i < particleCount; i++) {
+                        particles.push(new Particle(this.x, this.y, this.color));
+                    }
+                }
+                
+                draw() {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.restore();
+                }
+            }
+            
+            // 粒子类
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    // 增加粒子初始速度
+                    this.speed = random(2, 6);
+                    this.angle = random(0, Math.PI * 2);
+                    this.velocityX = Math.cos(this.angle) * this.speed;
+                    this.velocityY = Math.sin(this.angle) * this.speed;
+                    // 减小重力影响
+                    this.gravity = gravity * 0.7;
+                    this.friction = 0.96;  // 减小摩擦力，让粒子飞得更远
+                    this.lifespan = 120;  // 增加粒子寿命
+                    this.color = color;
+                    this.radius = 2;
+                }
+                
+                update() {
+                    this.velocityX *= this.friction;
+                    this.velocityY *= this.friction;
+                    this.velocityY += this.gravity;
+                    this.x += this.velocityX;
+                    this.y += this.velocityY;
+                    this.lifespan -= 1.5;
+                }
+                
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.lifespan / 120;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.restore();
+                }
+            }
+            
+            // 创建新烟花
+            function createFirework() {
+                fireworks.push(new Firework());
+            }
+            
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // 半透明背景创造拖尾效果
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // 更新和绘制烟花
+                for (let i = fireworks.length - 1; i >= 0; i--) {
+                    fireworks[i].update();
+                    fireworks[i].draw();
+                    
+                    if (fireworks[i].exploded) {
+                        fireworks.splice(i, 1);
+                    }
+                }
+                
+                // 更新和绘制粒子
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    
+                    if (particles[i].lifespan <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+                
+                // 降低新烟花生成频率，避免过于密集
+                if (Math.random() < 0.015) {
+                    createFirework();
+                }
+            }
+            
+            // 开始动画
+            animate();
+        }
+        
+        // 初始化函数
+        function init() {
+            const startBtn = document.getElementById('start-btn');
+            const startPage = document.getElementById('start-page');
+            const container = document.querySelector('.container');
+            const musicControl = document.getElementById('musicControl');
+            const bgm = document.getElementById('birthdayBGM');
+            
+            // 初始化烟花效果
+            initFireworks();
+            
+            // 开始按钮点击事件
+            startBtn.addEventListener('click', function() {
+                startPage.style.opacity = '0';
+                
+                setTimeout(() => {
+                    startPage.style.display = 'none';
+                    container.style.display = 'flex';
+                    
+                    startBlessingAnimation();
+                    playBackgroundMusic();
+                }, 800);
+            });
+            
+            // 音乐控制
+            musicControl.addEventListener('click', function() {
+                if (bgm.paused) {
+                    bgm.play();
+                    musicControl.textContent = '♪';
+                } else {
+                    bgm.pause();
+                    musicControl.textContent = '🔇';
+                }
+            });
+        }
+        
+        // 播放背景音乐
+        function playBackgroundMusic() {
+            const bgm = document.getElementById('birthdayBGM');
+            const playPromise = bgm.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log("自动播放被阻止，需要用户交互");
+                });
+            }
+        }
+        
+        // 开始祝福语动画
+        function startBlessingAnimation() {
+            setInterval(createBlessing, 400);
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    createBlessing();
+                }, i * 200);
+            }
+        }
+        
+        // 创建祝福语
+        function createBlessing() {
+            const blessingsContainer = document.getElementById('blessings-container');
+            const cakeContainer = document.getElementById('cake-container');
+            
+            const blessingText = blessings[Math.floor(Math.random() * blessings.length)];
+            const blessingColor = blessingColors[Math.floor(Math.random() * blessingColors.length)];
+            
+            const blessingElement = document.createElement('div');
+            blessingElement.className = 'blessing';
+            blessingElement.textContent = blessingText;
+            blessingElement.style.background = `linear-gradient(135deg, ${blessingColor}, ${lightenColor(blessingColor, 30)})`;
+            
+            const cakeRect = cakeContainer.getBoundingClientRect();
+            const cakeCenterX = cakeRect.left + cakeRect.width / 2;
+            const cakeCenterY = cakeRect.top + cakeRect.height / 2;
+            const cakeRadius = Math.max(cakeRect.width, cakeRect.height) / 2;
+            
+            const angle = Math.random() * Math.PI * 2;
+            const distance = cakeRadius + 50 + Math.random() * 100;
+            
+            const startX = cakeCenterX + Math.cos(angle) * distance;
+            const startY = cakeCenterY + Math.sin(angle) * distance;
+            
+            blessingElement.style.left = `${startX}px`;
+            blessingElement.style.top = `${startY}px`;
+            
+            blessingsContainer.appendChild(blessingElement);
+            
+            setTimeout(() => {
+                if (blessingElement.parentNode) {
+                    blessingElement.parentNode.removeChild(blessingElement);
+                }
+            }, 7000);
+            
+            setTimeout(() => {
+                const blessings = blessingsContainer.querySelectorAll('.blessing');
+                if (blessings.length > 25) {
+                    blessings[0].remove();
+                }
+            }, 10000);
+        }
+        
+        // 颜色亮化函数
+        function lightenColor(color, percent) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1)}`;
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
